@@ -28,8 +28,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 // 회원 관리 처리 API (POST /user/**) 에 대해 CSRF 무시
-        http.csrf()
-                .ignoringAntMatchers("/user/**");
+        http.csrf().disable(); // 원래는 Enable 해놓고 바로 아래 로직처럼 예외처리를 해주는게 정상인데 수업진행을 위해 disable 시킨것
+//      http.csrf().ignoringAntMatchers("/user/**");
 
         http.authorizeRequests()
 // image 폴더를 login 없이 허용
