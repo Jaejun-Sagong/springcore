@@ -7,12 +7,6 @@ import lombok.Setter;
 
 import javax.persistence.*;
 
-import com.sparta.springcore.dto.ProductRequestDto;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import javax.persistence.*;
 
 @Setter
 @Getter // get 함수를 일괄적으로 만들어줍니다.

@@ -22,7 +22,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false)
+    @Column(nullable = false)   // unique 는 default값이 False
     private String password;
 
     @Column(nullable = false, unique = true)
@@ -32,10 +32,21 @@ public class User {
     @Enumerated(value = EnumType.STRING) //db에 저장할 때에는 enum값을 스트링으로 변환해서 저장하겠다는 의미
     private UserRoleEnum role;
 
+    @Column(unique = true) //nullable 안적으면 default값이 True
+    private Long kakaoId;
+
     public User(String username, String password, String email, UserRoleEnum role) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.role = role;
+        this.kakaoId = null;
+    }
+    public User(String username, String password, String email, UserRoleEnum role, Long kakaoId) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.role = role;
+        this.kakaoId = kakaoId;
     }
 }
