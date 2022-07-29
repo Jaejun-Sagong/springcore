@@ -3,12 +3,15 @@ package com.sparta.springcore.controller;
 import com.sparta.springcore.dto.ProductMypriceRequestDto;
 import com.sparta.springcore.dto.ProductRequestDto;
 import com.sparta.springcore.model.Product;
+import com.sparta.springcore.model.UserRoleEnum;
 import com.sparta.springcore.security.UserDetailsImpl;
 import com.sparta.springcore.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.management.relation.Role;
 import java.util.List;
 
 @RestController // JSON으로 데이터를 주고받음을 선언합니다.
@@ -53,6 +56,7 @@ public class ProductController {
         return productService.getProducts(userId);
     }
 //관리자로써 모든 상품 조회
+    @Secured(UserRoleEnum.Authority.ADMIN) //@Secured 의 권한 값은 static한 값을 줘야하기 때문에 이러한 방법 사용.
     @GetMapping("/api/admin/products")
     public List<Product> getAllProducts() {
         return productService.getAllProducts();

@@ -13,7 +13,7 @@ public class HomeController {
     public String home(Model model, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         model.addAttribute("username", userDetails.getUsername());
 
-        if (userDetails.getUser().getRole() == UserRoleEnum.ADMIN) {
+        if (userDetails.getUser().getRole() == UserRoleEnum.ADMIN) {    //UserRoleEnum
             model.addAttribute("admin_role", true);
         }
 
