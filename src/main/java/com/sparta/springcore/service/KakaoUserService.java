@@ -23,6 +23,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -113,25 +114,33 @@ public class KakaoUserService {
 
     private User registerKakaoUserIfNeeded(KakaoUserInfoDto kakaoUserInfo) {
         // DB 에 중복된 Kakao Id 가 있는지 확인
-        Long kakaoId = kakaoUserInfo.getId();
+        Long kakaoId = kakaoUserInfo.getId();  //kakaoUserInfo는 카카오 서버에서 받은 유저 정보
         User kakaoUser = userRepository.findByKakaoId(kakaoId)
                 .orElse(null);
-        if (kakaoUser == null) {
+        if (kakaoUser == null) {  //카카오로 회원가입 한 적은 없다.
+            String kakaoEmail = kakaoUserInfo.getEmail();
+            if (userRepository.findByEmail(kakaoEmail).isPresent()) { //근데 폼 회원가입시 이메일을 카카오 이메일로 입력해서 카카오로 로그인 하려는데 email이 중복된다면
+                User sameEmailUser = userRepository.findByEmail(kakaoEmail)
+                        .orElse(null);
+                sameEmailUser.setKakaoId(kakaoUserInfo.getId());
+                return sameEmailUser;
+            } else {
 // 회원가입
 // username: kakao nickname
-            String nickname = kakaoUserInfo.getNickname();
+                String nickname = kakaoUserInfo.getNickname();
 
 // password: random UUID
-            String password = UUID.randomUUID().toString(); // 랜덤 평문
-            String encodedPassword = passwordEncoder.encode(password); //평문이기때문에 인코딩
+                String password = UUID.randomUUID().toString(); // 랜덤 평문
+                String encodedPassword = passwordEncoder.encode(password); //평문이기때문에 인코딩
 
 // email: kakao email
-            String email = kakaoUserInfo.getEmail();
+                String email = kakaoUserInfo.getEmail();
 // role: 일반 사용자
-            UserRoleEnum role = UserRoleEnum.USER;
+                UserRoleEnum role = UserRoleEnum.USER;
 
-            kakaoUser = new User(nickname, encodedPassword, email, role, kakaoId);
-            userRepository.save(kakaoUser);
+                kakaoUser = new User(nickname, encodedPassword, email, role, kakaoId);
+                userRepository.save(kakaoUser);
+            }
         }
         return kakaoUser;
     }
