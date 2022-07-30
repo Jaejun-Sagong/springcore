@@ -3,16 +3,15 @@ package com.sparta.springcore.controller;
 import com.sparta.springcore.dto.ProductMypriceRequestDto;
 import com.sparta.springcore.dto.ProductRequestDto;
 import com.sparta.springcore.model.Product;
+import com.sparta.springcore.model.User;
 import com.sparta.springcore.model.UserRoleEnum;
 import com.sparta.springcore.security.UserDetailsImpl;
 import com.sparta.springcore.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import javax.management.relation.Role;
-import java.util.List;
 
 @RestController // JSON으로 데이터를 주고받음을 선언합니다.
 public class ProductController {
@@ -49,16 +48,39 @@ public class ProductController {
 
     // 로그인한 회원이 등록한 관심 상품 조회
     @GetMapping("/api/products")
-    public List<Product> getProducts(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public Page<Product> getProducts(
+            @RequestParam("page") int page,
+            @RequestParam("size")int size,
+            @RequestParam("sortBy")String sortBy,
+            @RequestParam("isAsc")boolean isAsc,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
 // 로그인 되어 있는 회원 테이블의 ID
         Long userId = userDetails.getUser().getId();
+        page = page -1; //클라이언트는 page를 1로 보내주지만 서버에서는 0부터 시작하기때문에 1을 빼줘야한다.
 
-        return productService.getProducts(userId);
+        return productService.getProducts(userId, page, size, sortBy, isAsc);
     }
 //관리자로써 모든 상품 조회
     @Secured(UserRoleEnum.Authority.ADMIN) //@Secured 의 권한 값은 static한 값을 줘야하기 때문에 이러한 방법 사용.
     @GetMapping("/api/admin/products")
-    public List<Product> getAllProducts() {
-        return productService.getAllProducts();
+    public Page<Product> getAllProducts(
+            @RequestParam("page") int page,
+            @RequestParam("size")int size,
+            @RequestParam("sortBy")String sortBy,
+            @RequestParam("isAsc")boolean isAsc
+    ) {
+        page = page -1;
+        return productService.getAllProducts(page, size, sortBy, isAsc);
+    }
+
+    @PostMapping("/api/products/{productId}/folder")
+    public Long addFolder(@PathVariable Long productId,
+                          @RequestParam Long folderId,
+                          @AuthenticationPrincipal UserDetailsImpl userDetails
+    ){
+        User user = userDetails.getUser();
+        Product product = productService.addFolder(productId, folderId, user);
+        return product.getId(); //return productId 해도 사실 무관하긴 하다.
     }
 }

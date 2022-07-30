@@ -22,7 +22,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void registerUser(SignupRequestDto requestDto) {
+    public User registerUser(SignupRequestDto requestDto) {  //Controller만 고려했을 때에는 반환타입이 void여도 되는데 UserProductIntegrationTest 에서 User로 받길 원해서 return추가함.
 // 회원 ID 중복 확인
         String username = requestDto.getUsername();
         Optional<User> found = userRepository.findByUsername(username);
@@ -45,6 +45,7 @@ public class UserService {
 
         User user = new User(username, password, email, role);
         userRepository.save(user);
+        return user;
     }
 
 }
