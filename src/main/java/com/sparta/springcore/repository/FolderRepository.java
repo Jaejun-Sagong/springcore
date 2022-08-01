@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface FolderRepository extends JpaRepository<Folder, Long> {
     List<Folder> findAllByUser(User user);
+    boolean existsByUserAndName(User user, String name);
 }

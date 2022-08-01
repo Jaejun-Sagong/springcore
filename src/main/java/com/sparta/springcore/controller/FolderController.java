@@ -1,17 +1,18 @@
 package com.sparta.springcore.controller;
 
 import com.sparta.springcore.dto.FolderRequestDto;
+import com.sparta.springcore.exception.RestApiException;
 import com.sparta.springcore.model.Folder;
+import com.sparta.springcore.model.Product;
 import com.sparta.springcore.model.User;
 import com.sparta.springcore.security.UserDetailsImpl;
 import com.sparta.springcore.service.FolderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,22 +26,42 @@ public class FolderController {
     }
 
     @PostMapping("api/folders")
-    public List<Folder> addFolders(   //보통은 Dto형태로 만들어서 반환하는게 좋다.
-          @RequestBody FolderRequestDto folderRequestDto,
-          @AuthenticationPrincipal UserDetailsImpl userDetails
+    public List<Folder> addFolders(
+            @RequestBody FolderRequestDto folderRequestDto,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
+        List<String> folderNames = folderRequestDto.getFolderNames();
+        User user = userDetails.getUser();
 
-
-//        Long userId =  userDetails.getUser().getId(); // 원래 이렇게 해야하는데
-        User user = userDetails.getUser();    // 객체의 연관관계를 통해서 이렇게 user를 넘겨줘도 됨.
-        List<Folder> folders = folderService.addFolders(folderRequestDto.getFolderNames(), user);
-        return folders;
+        return folderService.addFolders(folderNames, user);
     }
+
+    // 회원이 등록한 모든 폴더 조회
     @GetMapping("api/folders")
     public List<Folder> getFolders(
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        List<Folder> folderList = folderService.getFolders(userDetails.getUser());
-        return folderList;
+        return folderService.getFolders(userDetails.getUser());
+    }
+
+    // 회원이 등록한 폴더 내 모든 상품 조회
+    @GetMapping("api/folders/{folderId}/products")
+    public Page<Product> getProductsInFolder(
+            @PathVariable Long folderId,
+            @RequestParam int page,
+            @RequestParam int size,
+            @RequestParam String sortBy,
+            @RequestParam boolean isAsc,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        page = page - 1;
+        return folderService.getProductsInFolder(
+                folderId,
+                page,
+                size,
+                sortBy,
+                isAsc,
+                userDetails.getUser()
+        );
     }
 }

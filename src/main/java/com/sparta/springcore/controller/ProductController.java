@@ -26,7 +26,7 @@ public class ProductController {
     // 신규 상품 등록
     @PostMapping("/api/products")
     public Product createProduct(@RequestBody ProductRequestDto requestDto,
-                                 @AuthenticationPrincipal UserDetailsImpl userDetails) { //유저별 관심상품 출력 기능을 위한 유저Id를 받아오기 위해 추가된 부분
+                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {
 // 로그인 되어 있는 회원 테이블의 ID
         Long userId = userDetails.getUser().getId();
 
@@ -37,8 +37,7 @@ public class ProductController {
     }
 
     // 설정 가격 변경
-    @PutMapping("/api/products/{id}") // getProducts메소드처럼 로그인한 유저의 정보가 필요없다. 로그인한 유저가 전제로 갈려있고 id는 path로 받기떄문에
-    // but 로그인 한 유저가 다른사람의 상품을 볼 수도 있는 방법이 있다고 하셨기 때문에 UserDetailsImpl을 통해서 한 번 더 확인하는 작업를 거치는게 더 좋을 것 같다.
+    @PutMapping("/api/products/{id}")
     public Long updateProduct(@PathVariable Long id, @RequestBody ProductMypriceRequestDto requestDto) {
         Product product = productService.updateProduct(id, requestDto);
 
@@ -50,37 +49,40 @@ public class ProductController {
     @GetMapping("/api/products")
     public Page<Product> getProducts(
             @RequestParam("page") int page,
-            @RequestParam("size")int size,
-            @RequestParam("sortBy")String sortBy,
-            @RequestParam("isAsc")boolean isAsc,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
+            @RequestParam("size") int size,
+            @RequestParam("sortBy") String sortBy,
+            @RequestParam("isAsc") boolean isAsc,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
 // 로그인 되어 있는 회원 테이블의 ID
         Long userId = userDetails.getUser().getId();
-        page = page -1; //클라이언트는 page를 1로 보내주지만 서버에서는 0부터 시작하기때문에 1을 빼줘야한다.
+        page = page - 1;
 
         return productService.getProducts(userId, page, size, sortBy, isAsc);
     }
-//관리자로써 모든 상품 조회
-    @Secured(UserRoleEnum.Authority.ADMIN) //@Secured 의 권한 값은 static한 값을 줘야하기 때문에 이러한 방법 사용.
+
+    // (관리자용) 전체 상품 조회
+    @Secured(UserRoleEnum.Authority.ADMIN)
     @GetMapping("/api/admin/products")
     public Page<Product> getAllProducts(
             @RequestParam("page") int page,
-            @RequestParam("size")int size,
-            @RequestParam("sortBy")String sortBy,
-            @RequestParam("isAsc")boolean isAsc
+            @RequestParam("size") int size,
+            @RequestParam("sortBy") String sortBy,
+            @RequestParam("isAsc") boolean isAsc
     ) {
-        page = page -1;
+        page = page - 1;
         return productService.getAllProducts(page, size, sortBy, isAsc);
     }
 
+    // 상품에 폴더 추가
     @PostMapping("/api/products/{productId}/folder")
-    public Long addFolder(@PathVariable Long productId,
-                          @RequestParam Long folderId,
-                          @AuthenticationPrincipal UserDetailsImpl userDetails
-    ){
+    public Long addFolder(
+            @PathVariable Long productId,
+            @RequestParam Long folderId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
         User user = userDetails.getUser();
         Product product = productService.addFolder(productId, folderId, user);
-        return product.getId(); //return productId 해도 사실 무관하긴 하다.
+        return product.getId();
     }
 }
